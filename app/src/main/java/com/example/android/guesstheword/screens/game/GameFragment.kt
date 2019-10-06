@@ -17,14 +17,15 @@
 package com.example.android.guesstheword.screens.game
 
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.GameFragmentBinding
 
@@ -51,27 +52,34 @@ class GameFragment : Fragment() {
         )
 
         viewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
+        binding.gameViewModel = viewModel
+        binding.setLifecycleOwner(this)
 
         viewModel.score.observe(this,
                 Observer { newScore ->
                     binding.scoreText.text = newScore.toString()
                 }
         )
-        viewModel.word.observe(this, Observer { newWord ->
-            binding.wordText.text = newWord
-        })
+//        viewModel.word.observe(this, Observer { newWord ->
+//            binding.wordText.text = newWord
+//        })
         viewModel.eventGameFinish.observe(this, Observer { hasGameFinished ->
             if (hasGameFinished) {
                 gameFinished()
+                viewModel.onGameFinishComplete()
             }
         })
 
-        binding.correctButton.setOnClickListener {
-            viewModel.onCorrect()
-        }
-        binding.skipButton.setOnClickListener {
-            viewModel.onSkip()
-        }
+        viewModel.currentTime.observe(this, Observer { newTime ->
+            binding.timerText.text = DateUtils.formatElapsedTime(newTime)
+        })
+
+//        binding.correctButton.setOnClickListener {
+//            viewModel.onCorrect()
+//        }
+//        binding.skipButton.setOnClickListener {
+//            viewModel.onSkip()
+//        }
 
         return binding.root
 
@@ -82,9 +90,9 @@ class GameFragment : Fragment() {
      * Called when the game is finished
      */
     fun gameFinished() {
-//        val action = GameFragmentDirections.actionGameToScore(viewModel.score.value ?: 0)
-//        findNavController(this).navigate(action)
-        Toast.makeText(this.activity, "Game is Finished", Toast.LENGTH_SHORT).show()
+        val action = GameFragmentDirections.actionGameToScore(viewModel.score.value ?: 0)
+        findNavController(this).navigate(action)
+        // Toast.makeText(this.activity, "Game is Finished", Toast.LENGTH_SHORT).show()
     }
 
 }
